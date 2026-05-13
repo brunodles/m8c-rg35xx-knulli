@@ -1,8 +1,8 @@
-FROM --platform=linux/arm64 ubuntu:22.04
+FROM --platform=linux/arm64 ubuntu:25.04
 
 ENV DEBIAN_FRONTEND=noninteractive
 ENV LINUX_KERNEL_VERSION=4.9.170
-ENV M8C_VERSION=1.7.10
+ENV M8C_VERSION=2.2.3
 
 # Update and install required packages
 RUN apt-get update && apt-get install -y \
@@ -16,7 +16,7 @@ RUN apt-get update && apt-get install -y \
     libssl-dev \
     pkg-config \
     dos2unix \
-    libsdl2-dev \
+    libsdl3-dev \
     build-essential \
     git \
     python3 \
@@ -45,7 +45,6 @@ RUN wget -O linux-sunxi64-legacy.config https://raw.githubusercontent.com/knulli
 ENV CC=gcc
 ENV CXX=g++
 ENV PKG_CONFIG_PATH=/usr/lib/aarch64-linux-gnu/pkgconfig
-ENV SDL_CONFIG=/usr/bin/sdl2-config
 
 # Ensure the output directory exists
 RUN mkdir -p /build/compiled/m8c

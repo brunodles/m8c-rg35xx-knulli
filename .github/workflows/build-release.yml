@@ -4,7 +4,6 @@ on:
   push:
     tags:
       - "v*"
-  workflow_dispatch:
 
 permissions:
   contents: write
@@ -28,13 +27,8 @@ jobs:
       - name: Prepare release metadata
         id: meta
         run: |
-          if [ "${GITHUB_REF_TYPE}" = "tag" ]; then
-            TAG="${GITHUB_REF_NAME}"
-          else
-            TAG="build-${GITHUB_RUN_NUMBER}"
-          fi
+          TAG="${GITHUB_REF_NAME}"
           ASSET_NAME="m8c-output-${TAG}.tar.gz"
-
           echo "tag=${TAG}" >> "$GITHUB_OUTPUT"
           echo "asset_name=${ASSET_NAME}" >> "$GITHUB_OUTPUT"
 

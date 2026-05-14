@@ -3,8 +3,18 @@ FROM ubuntu:25.04
 ENV DEBIAN_FRONTEND=noninteractive
 ENV LINUX_KERNEL_VERSION=4.9.170
 ENV M8C_VERSION=2.2.3
+# SDL3 version and checksum (kept in sync with upstream laamaa/m8c CI)
+ENV SDL_VERSION=3.2.20
+ENV SDL_SHA256=467600ae090dd28616fa37369faf4e3143198ff1da37729b552137e47f751a67
+ENV XTOOL=/build/aarch64-buildroot-linux-gnu_sdk-buildroot
+ENV XHOST=aarch64-buildroot-linux-gnu
 
-# Update and install required packages
+# Update and install required packages.
+# Note: libsdl3-dev is intentionally NOT installed here because apt installs the
+# host-architecture (x86_64) package, which cannot be used when cross-compiling
+# for ARM64.  SDL3 is instead built from source and installed into the Knulli
+# toolchain sysroot (see the cross-compile step below).
+# cmake and ninja-build are required to build SDL3 from source.
 RUN apt-get clean && \
     rm -rf /var/lib/apt/lists/* && \
     apt-get update && \
@@ -21,8 +31,9 @@ RUN apt-get clean && \
     pkg-config \
     dos2unix \
     git \
+    cmake \
+    ninja-build \
     libserialport-dev \
-    libsdl3-dev \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /build
@@ -45,6 +56,40 @@ RUN wget -O linux-sunxi64-legacy.config https://raw.githubusercontent.com/knulli
 RUN wget -O aarch64-buildroot-linux-gnu_sdk-buildroot.tar.gz https://github.com/knulli-cfw/toolchains/releases/download/rg35xx-plush-sdk-20240421/aarch64-buildroot-linux-gnu_sdk-buildroot.tar.gz \
     && tar -xzvf aarch64-buildroot-linux-gnu_sdk-buildroot.tar.gz \
     && rm aarch64-buildroot-linux-gnu_sdk-buildroot.tar.gz
+
+# Cross-compile SDL3 for the ARM64 target and install it into the Knulli
+# toolchain sysroot.  The Knulli SDK pre-dates SDL3, so SDL3 is not included
+# in the sysroot.  We build a minimal static SDL3 here so that the m8c
+# cross-compilation can find the headers and link against the library.
+#
+# CMAKE_INSTALL_PREFIX=/usr  – the runtime path on the target device
+# CMAKE_STAGING_PREFIX        – where files land on the build host (the sysroot)
+# PKG_CONFIG_SYSROOT_DIR in build_script.x86_64.sh then transforms /usr/* →
+# $SYSROOT/usr/* so the cross-compiler resolves headers and libraries correctly.
+RUN export PATH=$PATH:$XTOOL/bin && \
+    export SYSROOT=$XTOOL/$XHOST/sysroot && \
+    wget -O SDL3-${SDL_VERSION}.tar.gz \
+        https://github.com/libsdl-org/SDL/releases/download/release-${SDL_VERSION}/SDL3-${SDL_VERSION}.tar.gz && \
+    echo "${SDL_SHA256}  SDL3-${SDL_VERSION}.tar.gz" | sha256sum -c - || \
+        { echo "SDL3 archive checksum failed"; exit 1; } && \
+    tar zxf SDL3-${SDL_VERSION}.tar.gz && \
+    cmake -S SDL3-${SDL_VERSION} \
+        -B SDL3-${SDL_VERSION}/build \
+        -DCMAKE_SYSTEM_NAME=Linux \
+        -DCMAKE_SYSTEM_PROCESSOR=aarch64 \
+        -DCMAKE_C_COMPILER=${XHOST}-gcc \
+        -DCMAKE_SYSROOT=${SYSROOT} \
+        -DCMAKE_INSTALL_PREFIX=/usr \
+        -DCMAKE_STAGING_PREFIX=${SYSROOT}/usr \
+        -DSDL_STATIC=ON \
+        -DSDL_SHARED=OFF \
+        -DSDL_TEST=OFF \
+        -DSDL_TESTS=OFF \
+        -DSDL_EXAMPLES=OFF \
+        -DCMAKE_BUILD_TYPE=Release \
+        -G Ninja && \
+    ninja -C SDL3-${SDL_VERSION}/build install && \
+    rm -rf SDL3-${SDL_VERSION} SDL3-${SDL_VERSION}.tar.gz
 
 COPY build_script.x86_64.sh /build/build_script.sh
 RUN chmod +x /build/build_script.sh && dos2unix /build/build_script.sh

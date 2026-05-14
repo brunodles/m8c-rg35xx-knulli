@@ -4,7 +4,11 @@ ENV DEBIAN_FRONTEND=noninteractive
 ENV LINUX_KERNEL_VERSION=4.9.170
 ENV M8C_VERSION=2.2.3
 
-# Update and install required packages
+# Update and install required packages.
+# libsdl3-dev is available in the official Ubuntu repositories from Ubuntu 25.04
+# onwards.  If you need to build on an older Ubuntu version, you must build
+# SDL3 from source first: https://github.com/libsdl-org/SDL/blob/main/docs/README-cmake.md
+# cmake and ninja-build are listed here to match the upstream m8c build environment.
 RUN apt-get update && apt-get install -y \
     wget \
     tar \
@@ -24,6 +28,8 @@ RUN apt-get update && apt-get install -y \
     autoconf \
     automake \
     libtool \
+    cmake \
+    ninja-build \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /build

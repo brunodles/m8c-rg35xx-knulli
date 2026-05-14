@@ -17,6 +17,23 @@ export SYSROOT=$XTOOL/$XHOST/sysroot
 export PKG_CONFIG_PATH=$SYSROOT/usr/lib/pkgconfig
 export PKG_CONFIG_SYSROOT_DIR=$SYSROOT
 
+# Preflight: verify SDL3 and libserialport are available in the sysroot.
+# SDL3 is cross-compiled into the sysroot during the Docker image build.
+# If this check fails, rebuild the Docker image to regenerate the sysroot.
+echo "Checking build dependencies..."
+if ! pkg-config --exists sdl3 2>/dev/null; then
+  echo "ERROR: SDL3 not found in sysroot (PKG_CONFIG_PATH=$PKG_CONFIG_PATH)"
+  echo "SDL3 must be cross-compiled into the Knulli toolchain sysroot."
+  echo "Rebuild the Docker image to trigger the SDL3 cross-compile step."
+  exit 1
+fi
+if ! pkg-config --exists libserialport 2>/dev/null; then
+  echo "ERROR: libserialport not found in sysroot (PKG_CONFIG_PATH=$PKG_CONFIG_PATH)"
+  exit 1
+fi
+echo "✓ SDL3 $(pkg-config --modversion sdl3) found in sysroot"
+echo "✓ libserialport $(pkg-config --modversion libserialport) found in sysroot"
+
 # Build m8c
 echo "Building m8c..."
 cd /build/m8c

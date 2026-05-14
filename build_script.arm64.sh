@@ -7,6 +7,23 @@ cd /build
 # Create output directory (in case it wasn't created by Docker)
 mkdir -p /build/compiled/m8c
 
+# Preflight: verify SDL3 and libserialport are available.
+# On Ubuntu 25.04+, these are provided by libsdl3-dev and libserialport-dev.
+# For older Ubuntu versions, SDL3 must be built from source first:
+#   https://github.com/libsdl-org/SDL/blob/main/docs/README-cmake.md
+echo "Checking build dependencies..."
+if ! pkg-config --exists sdl3 2>/dev/null; then
+  echo "ERROR: SDL3 not found. Install libsdl3-dev (Ubuntu 25.04+) or build SDL3 from source."
+  echo "See: https://github.com/libsdl-org/SDL/blob/main/docs/README-cmake.md"
+  exit 1
+fi
+if ! pkg-config --exists libserialport 2>/dev/null; then
+  echo "ERROR: libserialport not found. Install libserialport-dev."
+  exit 1
+fi
+echo "✓ SDL3 $(pkg-config --modversion sdl3) found"
+echo "✓ libserialport $(pkg-config --modversion libserialport) found"
+
 # Build m8c
 echo "Building m8c..."
 cd /build/m8c

@@ -19,7 +19,8 @@ The idea behind this is to provide a platform that makes it relatively easy for 
 This version builds using:
 - Linux kernel `v4.9.170`
 - Knulli RG35XX Plus/H/SP/2024 toolchain `rg35xx-plush-sdk-20240421/aarch64-buildroot-linux-gnu_sdk-buildroot`
-- m8c `v1.7.10`
+- m8c `v2.2.3`
+- SDL3 `v3.2.20` (cross-compiled from source into the Knulli toolchain sysroot)
 
 ## Usage
 
@@ -75,9 +76,19 @@ The build process includes the following steps:
 2. Downloads and extracts the Knulli ARM64 toolchain
 3. Downloads the Knulli Linux config file for RG35XX* devices
 4. Downloads and extracts the m8c project
-5. Configures and builds the necessary kernel modules
-6. Builds m8c
-7. Collects all built files and creates a startup script
+5. **Cross-compiles SDL3 from source** into the Knulli toolchain sysroot (x86_64 build only)
+   - The Knulli SDK pre-dates SDL3, so SDL3 must be built and installed into the sysroot before m8c can be compiled.
+   - On ARM64 (native build), `libsdl3-dev` is installed via apt (requires Ubuntu 25.04 or later).
+6. Configures and builds the necessary kernel modules
+7. Builds m8c
+8. Collects all built files and creates a startup script
+
+### SDL3 Dependency Note
+
+m8c v2.x uses [SDL3](https://github.com/libsdl-org/SDL). The Docker build handles this automatically:
+
+- **x86_64 build** (`Dockerfile.x86_64`): SDL3 is cross-compiled from source (version-pinned with SHA-256 checksum verification) and installed into the Knulli ARM64 toolchain sysroot. No manual steps are required.
+- **ARM64 build** (`Dockerfile.arm64`): SDL3 is installed via `apt` (`libsdl3-dev`). This requires **Ubuntu 25.04 or later** in the Docker base image. For older Ubuntu versions, SDL3 must be built from source (see [SDL3 build instructions](https://github.com/libsdl-org/SDL/blob/main/docs/README-cmake.md)).
 
 ## Output
 

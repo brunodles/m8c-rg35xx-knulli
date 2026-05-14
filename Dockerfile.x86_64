@@ -1,15 +1,12 @@
-FROM ubuntu:22.04
+FROM ubuntu:25.04
 
 ENV DEBIAN_FRONTEND=noninteractive
 ENV LINUX_KERNEL_VERSION=4.9.170
-ENV M8C_VERSION=1.7.10
+ENV M8C_VERSION=2.2.3
 
-# Update GPG keys and install required packages
+# Update and install required packages
 RUN apt-get clean && \
     rm -rf /var/lib/apt/lists/* && \
-    apt-get update && \
-    apt-get install -y gnupg && \
-    apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 3B4FE6ACC0B21F32 871920D1991BC93C && \
     apt-get update && \
     apt-get install -y \
     wget \
@@ -23,6 +20,9 @@ RUN apt-get clean && \
     libssl-dev \
     pkg-config \
     dos2unix \
+    git \
+    libserialport-dev \
+    libsdl3-dev \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /build

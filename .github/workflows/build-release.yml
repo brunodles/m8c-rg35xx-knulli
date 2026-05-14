@@ -4,6 +4,12 @@ on:
   push:
     tags:
       - "v*"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Tag name for the release (e.g. v1.0.0). Leave empty to skip creating a GitHub release."
+        required: false
+        default: ""
 
 permissions:
   contents: write
@@ -27,9 +33,19 @@ jobs:
       - name: Prepare release metadata
         id: meta
         run: |
-          TAG="${GITHUB_REF_NAME}"
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" && "${{ github.event.inputs.tag }}" != '' ]]; then
+            TAG="${{ github.event.inputs.tag }}"
+            SHOULD_RELEASE=true
+          elif [[ "${{ github.ref }}" == "refs/tags/"* ]]; then
+            TAG="${GITHUB_REF_NAME}"
+            SHOULD_RELEASE=true
+          else
+            TAG="${GITHUB_REF_NAME}"
+            SHOULD_RELEASE=false
+          fi
           ASSET_NAME="m8c-output-${TAG}.tar.gz"
           echo "tag=${TAG}" >> "$GITHUB_OUTPUT"
+          echo "should_release=${SHOULD_RELEASE}" >> "$GITHUB_OUTPUT"
           echo "asset_name=${ASSET_NAME}" >> "$GITHUB_OUTPUT"
 
       - name: Archive output
@@ -44,6 +60,7 @@ jobs:
           path: ${{ steps.meta.outputs.asset_name }}
 
       - name: Create GitHub release
+        if: steps.meta.outputs.should_release == 'true'
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ steps.meta.outputs.tag }}

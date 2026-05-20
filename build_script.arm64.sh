@@ -96,7 +96,7 @@ cd $HOME
 # Ensure m8c is executable
 chmod +x ./m8c
 
-export SDL3_LIB_DIR=$(dirname $(realpath $0))/m8c/lib
+export SDL3_LIB_DIR="$(dirname "$(realpath "$0")")/m8c/lib"
 export LD_LIBRARY_PATH="$SDL3_LIB_DIR${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
 
 cp *.ko /lib/modules/$LINUX_KERNEL_VERSION

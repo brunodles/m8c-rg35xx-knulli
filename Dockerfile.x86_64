@@ -57,8 +57,7 @@ RUN wget -O aarch64-buildroot-linux-gnu_sdk-buildroot.tar.gz https://github.com/
     && tar -xzvf aarch64-buildroot-linux-gnu_sdk-buildroot.tar.gz \
     && rm aarch64-buildroot-linux-gnu_sdk-buildroot.tar.gz
 
-# Cross-compile SDL3 for the ARM64 target device from this x86_64 build
-# container and install it into the Knulli
+# Cross-compile SDL3 for the target toolchain sysroot and install it into the Knulli
 # toolchain sysroot.  The Knulli SDK pre-dates SDL3, so SDL3 is not included
 # in the sysroot. We build SDL3 shared libraries here so the runtime package
 # can ship libSDL3.so for dynamic loading on the target device.

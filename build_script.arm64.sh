@@ -90,7 +90,10 @@ fi
 sed "s/\$LINUX_KERNEL_VERSION/$LINUX_KERNEL_VERSION/" <<'EOF' >/build/compiled/m8c.sh
 #!/bin/sh
 
-SCRIPT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+SCRIPT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd) || {
+  echo "Error: unable to resolve script directory"
+  exit 1
+}
 export HOME="$SCRIPT_DIR/m8c"
 cd "$HOME"
 

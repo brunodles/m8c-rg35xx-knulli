@@ -91,7 +91,7 @@ sed "s/\$LINUX_KERNEL_VERSION/$LINUX_KERNEL_VERSION/" <<'EOF' >/build/compiled/m
 #!/bin/sh
 
 SCRIPT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd) || {
-  echo "Error: unable to determine script directory (possible symlink or permission issue)"
+  echo "Error: unable to determine script directory (check permissions)"
   exit 1
 }
 export HOME="$SCRIPT_DIR/m8c"

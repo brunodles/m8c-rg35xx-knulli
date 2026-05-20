@@ -96,13 +96,14 @@ fi
 sed "s/\$LINUX_KERNEL_VERSION/$LINUX_KERNEL_VERSION/" <<'EOF' >/build/compiled/m8c.sh
 #!/bin/sh
 
-export HOME=$(dirname $(realpath $0))/m8c
-cd $HOME
+SCRIPT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+export HOME="$SCRIPT_DIR/m8c"
+cd "$HOME"
 
 # Ensure m8c is executable
 chmod +x ./m8c
 
-export M8C_LIB_DIR="$(dirname "$(realpath "$0")")/m8c/lib"
+export M8C_LIB_DIR="$SCRIPT_DIR/m8c/lib"
 export LD_LIBRARY_PATH="$M8C_LIB_DIR${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
 
 cp *.ko /lib/modules/$LINUX_KERNEL_VERSION

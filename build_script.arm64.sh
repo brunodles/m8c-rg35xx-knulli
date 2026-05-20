@@ -71,17 +71,17 @@ fi
 
 # Copy SDL3 shared library for runtime loading
 echo "Collecting SDL3 shared library..."
-SDL3_LIB_COPIED=0
+SDL3_LIB_FOUND=0
 for SDL3_LIB_DIR in /usr/lib/aarch64-linux-gnu /usr/lib; do
   if compgen -G "$SDL3_LIB_DIR/libSDL3.so*" > /dev/null; then
     cp -av "$SDL3_LIB_DIR"/libSDL3.so* /build/compiled/m8c/lib/
     echo "Copied SDL3 shared library from $SDL3_LIB_DIR"
-    SDL3_LIB_COPIED=1
+    SDL3_LIB_FOUND=1
     break
   fi
 done
 
-if [ "$SDL3_LIB_COPIED" -ne 1 ]; then
+if [ "$SDL3_LIB_FOUND" -ne 1 ]; then
   echo "Error: SDL3 shared library not found in system library paths"
   exit 1
 fi

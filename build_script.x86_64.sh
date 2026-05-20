@@ -82,10 +82,10 @@ fi
 # Copy SDL3 shared library for runtime loading
 echo "Collecting SDL3 shared library..."
 if compgen -G "$SYSROOT/usr/lib/libSDL3.so*" > /dev/null; then
-  cp -av "$SYSROOT"/usr/lib/libSDL3.so* /build/compiled/m8c/lib/
+  cp -av "$SYSROOT/usr/lib/libSDL3.so"* /build/compiled/m8c/lib/
   echo "Copied SDL3 shared library from $SYSROOT/usr/lib"
 elif compgen -G "$SYSROOT/usr/lib64/libSDL3.so*" > /dev/null; then
-  cp -av "$SYSROOT"/usr/lib64/libSDL3.so* /build/compiled/m8c/lib/
+  cp -av "$SYSROOT/usr/lib64/libSDL3.so"* /build/compiled/m8c/lib/
   echo "Copied SDL3 shared library from $SYSROOT/usr/lib64"
 else
   echo "Error: SDL3 shared library not found in sysroot"

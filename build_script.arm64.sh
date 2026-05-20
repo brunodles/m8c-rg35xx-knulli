@@ -74,7 +74,7 @@ echo "Collecting SDL3 shared library..."
 SDL3_LIB_COPIED=0
 for SDL3_LIB_DIR in /usr/lib/aarch64-linux-gnu /usr/lib; do
   if compgen -G "$SDL3_LIB_DIR/libSDL3.so*" > /dev/null; then
-    cp -av $SDL3_LIB_DIR/libSDL3.so* /build/compiled/m8c/lib/
+    cp -av "$SDL3_LIB_DIR"/libSDL3.so* /build/compiled/m8c/lib/
     echo "Copied SDL3 shared library from $SDL3_LIB_DIR"
     SDL3_LIB_COPIED=1
     break

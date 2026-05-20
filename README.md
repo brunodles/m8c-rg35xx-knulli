@@ -95,6 +95,7 @@ m8c v2.x uses [SDL3](https://github.com/libsdl-org/SDL). The Docker build handle
 After a successful build, you'll find the following in the `output` directory:
 
 - A folder named `m8c` with the `m8c` executable and the compiled kernel modules (`cdc-acm.ko`, `snd-hwdep.ko`, `snd-usbmidi-lib.ko`, `snd-usb-audio.ko`) inside
+- A `m8c/lib` folder containing the SDL3 shared library (`libSDL3.so*`) used at runtime
 - `m8c.sh` startup script
 
 ## Installation on device (Knulli CFW-specific)

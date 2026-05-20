@@ -7,6 +7,7 @@ cd /build
 
 # Create output directory (in case it wasn't created by Docker)
 mkdir -p /build/compiled/m8c
+mkdir -p /build/compiled/m8c/lib
 
 # Ensure toolchain is in PATH
 echo "Configuring toolchain..."
@@ -78,6 +79,19 @@ else
   exit 1
 fi
 
+# Copy SDL3 shared library for runtime loading
+echo "Collecting SDL3 shared library..."
+if compgen -G "$SYSROOT/usr/lib/libSDL3.so*" > /dev/null; then
+  cp -av $SYSROOT/usr/lib/libSDL3.so* /build/compiled/m8c/lib/
+  echo "Copied SDL3 shared library from $SYSROOT/usr/lib"
+elif compgen -G "$SYSROOT/usr/lib64/libSDL3.so*" > /dev/null; then
+  cp -av $SYSROOT/usr/lib64/libSDL3.so* /build/compiled/m8c/lib/
+  echo "Copied SDL3 shared library from $SYSROOT/usr/lib64"
+else
+  echo "Error: SDL3 shared library not found in sysroot"
+  exit 1
+fi
+
 # Create m8c.sh script
 sed "s/\$LINUX_KERNEL_VERSION/$LINUX_KERNEL_VERSION/" <<'EOF' >/build/compiled/m8c.sh
 #!/bin/sh
@@ -87,6 +101,8 @@ cd $HOME
 
 # Ensure m8c is executable
 chmod +x ./m8c
+
+export LD_LIBRARY_PATH="$HOME/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
 
 cp *.ko /lib/modules/$LINUX_KERNEL_VERSION
 depmod
@@ -135,7 +151,8 @@ check_build_output() {
 
   # Check m8c.sh script
   if [ -f "/build/compiled/m8c.sh" ]; then
-    if grep -q "SDL_GAMECONTROLLERCONFIG" "/build/compiled/m8c.sh"; then
+    if grep -q "SDL_GAMECONTROLLERCONFIG" "/build/compiled/m8c.sh" && \
+       grep -q "LD_LIBRARY_PATH" "/build/compiled/m8c.sh"; then
       echo "✓ m8c.sh script present and contains expected content"
     else
       echo "✗ m8c.sh script present but may be invalid"
@@ -143,6 +160,14 @@ check_build_output() {
     fi
   else
     echo "✗ m8c.sh script missing"
+    ((error_count++))
+  fi
+
+  # Check SDL3 runtime library
+  if compgen -G "/build/compiled/m8c/lib/libSDL3.so*" > /dev/null; then
+    echo "✓ SDL3 runtime shared library present"
+  else
+    echo "✗ SDL3 runtime shared library missing"
     ((error_count++))
   fi
 
